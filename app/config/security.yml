@@ -1,6 +1,6 @@
 security:
     encoders:
-        TobiasOlry\TalklyBundle\Entity\User: plain
+        TobiasOlry\TalklyBundle\Entity\User: bcrypt
 
     providers:
         talky_user_provider:
@@ -11,19 +11,26 @@ security:
             pattern: ^/(_(profiler|wdt|error)|css|images|js)/
             security: false
 
-        login:
-            pattern: ^/login$
+        default:
+            pattern:   ^/$
             security: false
 
-        default:
-            pattern: ^/
-            anonymous: ~
-            logout:
-                path:   logout
-                target: login
+        login:
+            pattern:  ^/login
+            stateless: true
+            anonymous: true
+
             ntlm: "%ntlm%"
             form_login_ldap:
                 service: talkly.security.authentication.ldap
                 dn_string: "%ldap_dn_string%"
                 login_path: login
                 check_path: login_check
+                success_handler:          lexik_jwt_authentication.handler.authentication_success
+                failure_handler:          lexik_jwt_authentication.handler.authentication_failure
+                require_previous_session: false
+
+        api:
+            pattern:   ^/
+            stateless: true
+            lexik_jwt: ~
